@@ -1,16 +1,18 @@
 # Imports
 from collections import defaultdict
-from functools import partial
 import random
-from pyvis.network import Network
-import tkinter as Tk
 import networkx as nx
+import tkinter as Tk
+import customtkinter
+import webbrowser
+import os
+
+from functools import partial
+from pyvis.network import Network
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import webbrowser
-import os
 
 # Global Variables
 n = 30
@@ -176,6 +178,8 @@ def visualize_nx():
             graph.add_edge(node, dest)
     return graph, node_colors, node_labels
 
+
+# this is the start of unnecessary stuff most likely
 def draw_graph_window(a):
     graph, node_colors, node_labels = visualize_nx()
     pos = nx.spring_layout(graph)
@@ -204,30 +208,83 @@ def new_grid_graph(a, canvas):
     a.cla()
     draw_grid_graph(a)
     canvas.draw()
+    
+def update_window(canvas):
+    global edges
+    global types
+    global node_coords
+    # global graph
+    generate_grid_graph()
+    # canvas = Tk.Canvas()
+    canvas.delete('all')
+    width = canvas.winfo_width()
+    height = canvas.winfo_height()
+    minx = node_coords[min(node_coords, key=lambda x: node_coords[x][0])][0]-1
+    miny = node_coords[min(node_coords, key=lambda x: node_coords[x][1])][1]-1
+    maxx = node_coords[max(node_coords, key=lambda x: node_coords[x][0])][0]+1
+    maxy = node_coords[max(node_coords, key=lambda x: node_coords[x][1])][1]+1
+    numx = maxx - minx
+    numy = maxy - miny
+    
+    hscale = height / numy
+    wscale = width / numx
+    print(hscale, wscale)
+    
+    max_dir = max(numx, numy)
+    size = min(hscale, wscale) / 2
+    node_dist = size * 2
+    for node in edges:
+        # draw edges first
+        for v in edges[node]:
+            c1 = node_coords[node]
+            c1 = [c1[0]*node_dist, c1[1]*node_dist]
+            c2 = node_coords[v]
+            c2 = [c2[0]*node_dist, c2[1]*node_dist]
+            canvas.create_line(c1[0], c1[1], c2[0], c2[1])
+    for node in edges:
+        # for each edge, draw a circle at it's coordinates
+        c = node_coords[node]
+        c = [c[0]*node_dist, c[1]*node_dist]
+        canvas.create_oval(c[0]-size/2, c[1]-size/2, c[0]+size/2, c[1]+size/2, fill=color_map[types[node]])
+    print("x: %d - %d, y: %d - %d\nx: %d\ty: %d" % (minx, maxx, miny, maxy, (maxx-minx), (maxy-miny)))
+    for x in canvas.find_all():
+        canvas.move(x, width/2-node_dist*(numx/2+minx), height/2-node_dist*(numy/2+miny))
+
+        
+    
 
 root = Tk.Tk()
 root.wm_title = 'Blind Board Game Map Generator'
+root.minsize(width=root.winfo_screenwidth()-200, height=root.winfo_screenheight()-200)
 
 controls = Tk.Frame(root)
 controls.pack(side=Tk.TOP)
 
-f = Figure(figsize=(5, 4), dpi=100)
-a = f.add_subplot(111)
-nx.draw(nx.complete_graph(0), ax=a)
+graph = Tk.Canvas(bg='gray')
 
-canvas = FigureCanvasTkAgg(f, master=root)
-new_graph_btn = Tk.Button(master=root, command=partial(new_graph, a, canvas), text='New Board')
+new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph), text='New Board')
 new_graph_btn.pack(in_=controls, side=Tk.LEFT)
 
-new_grid_graph_btn = Tk.Button(master=root, command=partial(new_grid_graph, a, canvas), text='New Grid Board')
-new_grid_graph_btn.pack(in_=controls, side=Tk.LEFT)
+graph.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 
-save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
-save_html_btn.pack(in_=controls, side=Tk.LEFT)
+# old window code
+# f = Figure(figsize=(5, 4), dpi=100)
+# a = f.add_subplot(111)
+# nx.draw(nx.complete_graph(0), ax=a)
 
-canvas.draw()
-canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-canvas._tkcanvas.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+# canvas = FigureCanvasTkAgg(f, master=root)
+# new_graph_btn = Tk.Button(master=root, command=partial(new_graph, a, canvas), text='New Board')
+# new_graph_btn.pack(in_=controls, side=Tk.LEFT)
+
+# new_grid_graph_btn = Tk.Button(master=root, command=partial(new_grid_graph, a, canvas), text='New Grid Board')
+# new_grid_graph_btn.pack(in_=controls, side=Tk.LEFT)
+
+# save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
+# save_html_btn.pack(in_=controls, side=Tk.LEFT)
+
+# canvas.draw()
+# canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+# canvas._tkcanvas.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 
 root.mainloop()
 
