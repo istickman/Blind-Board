@@ -30,6 +30,10 @@ label_map = {0: 'START', 1: 'END', 2: 'GOOD', 3: 'BAD', 4: 'SHOP', 5: 'TP', 6: '
 space_map = {v: k for k, v in label_map.items()}
 count_map = {'GOOD': 3, 'BAD': 3, 'SHOP': 4, 'TP': 3, 'VS': 3}
 
+good_wheel = []
+bad_wheel = []
+vs_wheel = []
+
 def generate_graph():
     global edges
     global types
@@ -177,37 +181,6 @@ def visualize_nx():
         for dest in edges[node]:
             graph.add_edge(node, dest)
     return graph, node_colors, node_labels
-
-
-# this is the start of unnecessary stuff most likely
-def draw_graph_window(a):
-    graph, node_colors, node_labels = visualize_nx()
-    pos = nx.spring_layout(graph)
-    nx.draw(graph, pos, node_color=node_colors, labels=node_labels, with_labels=True, node_size=1500, node_shape='h', ax=a)
-    # font_size
-    # https://matplotlib.org/3.1.1/api/markers_api.html#module-matplotlib.markers
-    # bbox=dict(facecolor='none', edgecolor='blue', pad=10.0))
-    # https://www.geeksforgeeks.org/python-visualize-graphs-generated-in-networkx-using-matplotlib/
-
-def draw_grid_graph(a):
-    graph, node_colors, node_labels = visualize_nx()
-    pos = nx.spring_layout(graph)
-    for p in node_coords:
-        pos[p] = node_coords[p]
-    nx.draw(graph, pos, node_color=node_colors, labels=node_labels, with_labels=True, node_size=1500, node_shape='8', ax=a)
-
-    
-def new_graph(a, canvas):
-    generate_graph()
-    a.cla()
-    draw_graph_window(a)
-    canvas.draw()
-    
-def new_grid_graph(a, canvas):
-    generate_grid_graph()
-    a.cla()
-    draw_grid_graph(a)
-    canvas.draw()
     
 def update_window(canvas):
     global edges
@@ -228,9 +201,6 @@ def update_window(canvas):
     
     hscale = height / numy
     wscale = width / numx
-    print(hscale, wscale)
-    
-    max_dir = max(numx, numy)
     size = min(hscale, wscale) / 2
     node_dist = size * 2
     for node in edges:
@@ -246,7 +216,7 @@ def update_window(canvas):
         c = node_coords[node]
         c = [c[0]*node_dist, c[1]*node_dist]
         canvas.create_oval(c[0]-size/2, c[1]-size/2, c[0]+size/2, c[1]+size/2, fill=color_map[types[node]])
-    print("x: %d - %d, y: %d - %d\nx: %d\ty: %d" % (minx, maxx, miny, maxy, (maxx-minx), (maxy-miny)))
+        canvas.create_text(c[0], c[1], text=label_map[types[node]], fill='white', font=('Helvetica 12 bold'))
     for x in canvas.find_all():
         canvas.move(x, width/2-node_dist*(numx/2+minx), height/2-node_dist*(numy/2+miny))
 
@@ -260,31 +230,25 @@ root.minsize(width=root.winfo_screenwidth()-200, height=root.winfo_screenheight(
 controls = Tk.Frame(root)
 controls.pack(side=Tk.TOP)
 
-graph = Tk.Canvas(bg='gray')
+graph = Tk.Canvas(bg='light gray')
 
 new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph), text='New Board')
 new_graph_btn.pack(in_=controls, side=Tk.LEFT)
 
+save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
+save_html_btn.pack(in_=controls, side=Tk.LEFT)
+
+spacer = Tk.Frame(root)
+spacer.pack(in_=controls, side=Tk.LEFT, padx=35)
+
+wheels = Tk.Frame(root)
+wheels.pack(in_=controls, side=Tk.LEFT)
+
+
 graph.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 
-# old window code
-# f = Figure(figsize=(5, 4), dpi=100)
-# a = f.add_subplot(111)
-# nx.draw(nx.complete_graph(0), ax=a)
-
-# canvas = FigureCanvasTkAgg(f, master=root)
-# new_graph_btn = Tk.Button(master=root, command=partial(new_graph, a, canvas), text='New Board')
-# new_graph_btn.pack(in_=controls, side=Tk.LEFT)
-
-# new_grid_graph_btn = Tk.Button(master=root, command=partial(new_grid_graph, a, canvas), text='New Grid Board')
-# new_grid_graph_btn.pack(in_=controls, side=Tk.LEFT)
-
-# save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
-# save_html_btn.pack(in_=controls, side=Tk.LEFT)
-
-# canvas.draw()
-# canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-# canvas._tkcanvas.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+good_wheel_btn = Tk.Button(master=root, text='Good Wheel')
+good_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
 
 root.mainloop()
 
