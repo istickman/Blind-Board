@@ -34,6 +34,38 @@ good_wheel = ['+3 gold', 'Battle another player', '+2 gold', 'Spin bad wheel', '
 bad_wheel = ['Spin the good wheel', 'Go to shadow realm', 'Teleport', 'Swap places', 'Give away all gold', 'Change board', 'Return home', 'Give away 3 gold', 'Give away an item', 'Spin x2']
 vs_wheel = ['Number off', 'Another player decides', 'Joke battle', 'Losing player wins', 'Fact battle', 'Improv']
 
+size = 10
+color_index = 0
+player_index = 1
+player_colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
+players = []
+
+class movingCircle:
+
+    def __init__(self, canvas):
+        global color_index
+        global player_index
+        self.canvas = canvas
+        self.window = canvas.master
+        self.circle = canvas.create_oval(20, 20, 20+size/2, 20+size/2, fill=player_colors[color_index])
+        # self.label = canvas.create_text(20+size/4, 20+size/4, text=str(player_index))
+        color_index = (color_index + 1) % len(player_colors)
+        player_index += 1
+        players.append(self.circle)
+        self.window.bind("<ButtonPress-1>", self.start_move)
+        self.window.bind("<B1-Motion>", self.move)
+
+    def start_move(self, event):
+        self._x = event.x
+        self._y = event.y
+
+    def move(self, event):
+        deltax = event.x - self._x
+        deltay = event.y - self._y
+        self._x = event.x
+        self._y = event.y
+        self.canvas.move("current", deltax, deltay)
+
 def generate_graph():
     global edges
     global types
@@ -186,6 +218,7 @@ def update_window(canvas):
     global edges
     global types
     global node_coords
+    global size
     # global graph
     generate_grid_graph()
     # canvas = Tk.Canvas()
@@ -234,11 +267,12 @@ def spin_wheel(wheel):
         pop.destroy()
     popup.bind("<FocusOut>", partial(destroy, popup))
     
-def add_player():
-    x = 1
+def add_player(canvas):
+    movingCircle(canvas)
     
-def delete_player():
-    x = 2
+def delete_player(canvas):
+    canvas.delete(players[0])
+    players.pop(0)
     
 
 root = Tk.Tk()
@@ -274,8 +308,10 @@ bad_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
 vs_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, vs_wheel), text='VS Wheel')
 vs_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
 
-add_player_btn = Tk.Button(master=root, command=add_player, text='Add Player')
+add_player_btn = Tk.Button(master=root, command=partial(add_player, graph), text='Add Player')
 add_player_btn.pack(in_=controls, side=Tk.LEFT)
+delete_player_btn = Tk.Button(master=root, command=partial(delete_player, graph), text='Delete Player')
+delete_player_btn.pack(in_=controls, side=Tk.LEFT)
 
 root.mainloop()
 
