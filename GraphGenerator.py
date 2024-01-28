@@ -39,21 +39,31 @@ color_index = 0
 player_index = 1
 player_colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
 players = []
+player_texts = []
 
 class movingCircle:
 
-    def __init__(self, canvas):
+    def __init__(self, canvas, text):
         global color_index
         global player_index
         self.canvas = canvas
         self.window = canvas.master
         self.circle = canvas.create_oval(20, 20, 20+size/2, 20+size/2, fill=player_colors[color_index])
         # self.label = canvas.create_text(20+size/4, 20+size/4, text=str(player_index))
-        color_index = (color_index + 1) % len(player_colors)
         player_index += 1
         players.append(self.circle)
         self.window.bind("<ButtonPress-1>", self.start_move)
         self.window.bind("<B1-Motion>", self.move)
+        
+        self.textElems = Tk.Frame(text)
+        self.textElems.pack(in_=text, side=Tk.LEFT, padx=5)
+        self.textSquare = Tk.Text(height=1, width=1, bg=player_colors[color_index])
+        self.textSquare.pack(in_=self.textElems, side=Tk.LEFT)
+        self.text = Tk.Text(height=1, width=15, font='Helvetica 15')
+        self.text.pack(in_=self.textElems, side=Tk.LEFT, anchor='center')
+        player_texts.append(self.textElems)
+        
+        color_index = (color_index + 1) % len(player_colors)
 
     def start_move(self, event):
         self._x = event.x
@@ -214,7 +224,7 @@ def visualize_nx():
             graph.add_edge(node, dest)
     return graph, node_colors, node_labels
     
-def update_window(canvas):
+def update_window(canvas, text):
     global edges
     global types
     global node_coords
@@ -223,6 +233,8 @@ def update_window(canvas):
     generate_grid_graph()
     # canvas = Tk.Canvas()
     canvas.delete('all')
+    while len(players) > 0:
+        delete_player(canvas, text)
     width = canvas.winfo_width()
     height = canvas.winfo_height()
     minx = node_coords[min(node_coords, key=lambda x: node_coords[x][0])][0]-1
@@ -267,12 +279,14 @@ def spin_wheel(wheel):
         pop.destroy()
     popup.bind("<FocusOut>", partial(destroy, popup))
     
-def add_player(canvas):
-    movingCircle(canvas)
+def add_player(canvas, text):
+    movingCircle(canvas, text)
     
-def delete_player(canvas):
-    canvas.delete(players[0])
-    players.pop(0)
+def delete_player(canvas, text):
+    if len(players) > 0:
+        canvas.delete(players.pop(0))
+    if len(player_texts) > 0:
+        player_texts.pop(0).destroy()
     
 
 root = Tk.Tk()
@@ -283,8 +297,13 @@ controls = Tk.Frame(root)
 controls.pack(side=Tk.TOP)
 
 graph = Tk.Canvas(bg='light gray')
+graph.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 
-new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph), text='New Board')
+# text boxes
+text_boxes = Tk.Frame(root)
+text_boxes.pack(side=Tk.BOTTOM, padx=20)
+
+new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph, text_boxes), text='New Board')
 new_graph_btn.pack(in_=controls, side=Tk.LEFT)
 
 save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
@@ -299,8 +318,6 @@ wheels.pack(in_=controls, side=Tk.LEFT)
 spacer2 = Tk.Frame(root)
 spacer2.pack(in_=controls, side=Tk.LEFT, padx=35)
 
-graph.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-
 good_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, good_wheel), text='Good Wheel')
 good_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
 bad_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, bad_wheel), text='Bad Wheel')
@@ -308,9 +325,9 @@ bad_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
 vs_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, vs_wheel), text='VS Wheel')
 vs_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
 
-add_player_btn = Tk.Button(master=root, command=partial(add_player, graph), text='Add Player')
+add_player_btn = Tk.Button(master=root, command=partial(add_player, graph, text_boxes), text='Add Player')
 add_player_btn.pack(in_=controls, side=Tk.LEFT)
-delete_player_btn = Tk.Button(master=root, command=partial(delete_player, graph), text='Delete Player')
+delete_player_btn = Tk.Button(master=root, command=partial(delete_player, graph, text_boxes), text='Delete Player')
 delete_player_btn.pack(in_=controls, side=Tk.LEFT)
 
 root.mainloop()
