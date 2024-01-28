@@ -48,7 +48,7 @@ class movingCircle:
         global player_index
         self.canvas = canvas
         self.window = canvas.master
-        self.circle = canvas.create_oval(20, 20, 20+size/2, 20+size/2, fill=player_colors[color_index])
+        self.circle = canvas.create_oval(20, 20, 20+size/2, 20+size/2, fill=player_colors[color_index], outline='white', width=2)
         # self.label = canvas.create_text(20+size/4, 20+size/4, text=str(player_index))
         player_index += 1
         players.append(self.circle)
@@ -57,7 +57,7 @@ class movingCircle:
         
         self.textElems = Tk.Frame(text)
         self.textElems.pack(in_=text, side=Tk.LEFT, padx=5)
-        self.textSquare = Tk.Text(height=1, width=1, bg=player_colors[color_index])
+        self.textSquare = Tk.Text(height=1, width=1, bg=player_colors[color_index], state='disabled')
         self.textSquare.pack(in_=self.textElems, side=Tk.LEFT)
         self.text = Tk.Text(height=1, width=15, font='Helvetica 15')
         self.text.pack(in_=self.textElems, side=Tk.LEFT, anchor='center')
@@ -288,6 +288,11 @@ def delete_player(canvas, text):
     if len(player_texts) > 0:
         player_texts.pop(0).destroy()
     
+def scalen(v):
+    global n
+    global k
+    n = int(v)
+    k = n*1.5
 
 root = Tk.Tk()
 root.title('Blind Board Game Map Generator')
@@ -305,6 +310,9 @@ text_boxes.pack(side=Tk.BOTTOM, padx=20)
 
 new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph, text_boxes), text='New Board')
 new_graph_btn.pack(in_=controls, side=Tk.LEFT)
+
+nnodes_slider = Tk.Scale(master=root, command=scalen, from_=sum(count_map.values())+2, to=50, orient=Tk.HORIZONTAL)
+nnodes_slider.pack(in_=controls, side=Tk.LEFT)
 
 save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
 save_html_btn.pack(in_=controls, side=Tk.LEFT)
