@@ -30,9 +30,9 @@ label_map = {0: 'START', 1: 'END', 2: 'GOOD', 3: 'BAD', 4: 'SHOP', 5: 'TP', 6: '
 space_map = {v: k for k, v in label_map.items()}
 count_map = {'GOOD': 3, 'BAD': 3, 'SHOP': 4, 'TP': 3, 'VS': 3}
 
-good_wheel = []
-bad_wheel = []
-vs_wheel = []
+good_wheel = ['+3 gold', 'Battle another player', '+2 gold', 'Spin bad wheel', 'Double gold', '+5 gold', 'Gain compass', 'Send player to shadow realm']
+bad_wheel = ['Spin the good wheel', 'Go to shadow realm', 'Teleport', 'Swap places', 'Give away all gold', 'Change board', 'Return home', 'Give away 3 gold', 'Give away an item', 'Spin x2']
+vs_wheel = ['Number off', 'Another player decides', 'Joke battle', 'Losing player wins', 'Fact battle', 'Improv']
 
 def generate_graph():
     global edges
@@ -220,11 +220,29 @@ def update_window(canvas):
     for x in canvas.find_all():
         canvas.move(x, width/2-node_dist*(numx/2+minx), height/2-node_dist*(numy/2+miny))
 
-        
+def spin_wheel(wheel):
+    # Get random choice from wheel
+    outcome = random.choice(wheel)
+    # Make window
+    popup = Tk.Toplevel()
+    # popup.grab_set()
+    popup.focus_set()
+    popup.geometry('250x50')
+    popup.title('Wheel Result')
+    Tk.Label(popup, text=outcome, font='Helvetica 20').pack(side=Tk.TOP)
+    def destroy(pop, event):
+        pop.destroy()
+    popup.bind("<FocusOut>", partial(destroy, popup))
+    
+def add_player():
+    x = 1
+    
+def delete_player():
+    x = 2
     
 
 root = Tk.Tk()
-root.wm_title = 'Blind Board Game Map Generator'
+root.title('Blind Board Game Map Generator')
 root.minsize(width=root.winfo_screenwidth()-200, height=root.winfo_screenheight()-200)
 
 controls = Tk.Frame(root)
@@ -244,11 +262,20 @@ spacer.pack(in_=controls, side=Tk.LEFT, padx=35)
 wheels = Tk.Frame(root)
 wheels.pack(in_=controls, side=Tk.LEFT)
 
+spacer2 = Tk.Frame(root)
+spacer2.pack(in_=controls, side=Tk.LEFT, padx=35)
 
 graph.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 
-good_wheel_btn = Tk.Button(master=root, text='Good Wheel')
+good_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, good_wheel), text='Good Wheel')
 good_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
+bad_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, bad_wheel), text='Bad Wheel')
+bad_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
+vs_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, vs_wheel), text='VS Wheel')
+vs_wheel_btn.pack(in_=wheels, side=Tk.LEFT)
+
+add_player_btn = Tk.Button(master=root, command=add_player, text='Add Player')
+add_player_btn.pack(in_=controls, side=Tk.LEFT)
 
 root.mainloop()
 
@@ -261,5 +288,3 @@ root.mainloop()
 # https://www.geeksforgeeks.org/how-to-create-a-pop-up-message-when-a-button-is-pressed-in-python-tkinter/
 # https://docs.python.org/3/library/tkinter.html
 # https://stackoverflow.com/questions/37084313/how-to-display-rendered-html-content-in-text-widget-of-tkinter-in-python-3-4-x
-
-# %%
