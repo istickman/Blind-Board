@@ -269,7 +269,7 @@ def update_window(canvas, text):
         c = node_coords[node]
         # offset coordinates by node dist so it is spaced properly
         c = [c[0]*node_dist, c[1]*node_dist]
-        canvas.create_oval(c[0]-size/2, c[1]-size/2, c[0]+size/2, c[1]+size/2, fill=color_map[types[node]])
+        canvas.create_rectangle(c[0]-size/2, c[1]-size/3, c[0]+size/2, c[1]+size/3, fill=color_map[types[node]])
         canvas.create_text(c[0], c[1], text=label_map[types[node]], fill='white', font=('Helvetica 12 bold'))
     # offset all objects in canvas to be centered on screen
     for x in canvas.find_all():
