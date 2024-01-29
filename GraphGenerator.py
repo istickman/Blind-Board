@@ -12,7 +12,7 @@ from pyvis.network import Network
 # global variables
 n = 30 # number of node in graph
 k = int(n * 1.5) # total number of edges in graph
-d = 4 # max edges node can have
+d = 8 # max edges node can have
 edges = {} # mapping of node to list of edges
 types = {} # mapping of node id to node type
 node_map = defaultdict(dict) # double mapping of x,y to node id
@@ -158,10 +158,13 @@ def generate_grid_graph():
     # manually look at each node and count the available remaining edges
     eleft = 0
     for node in edges:
+        nleft = 0
+        c = node_coords[node]
         for dir in directions:
-            c = node_coords[node]
-            if c[0]+dir[0] in node_map and c[1]+dir[1] in node_map[c[0]+dir[0]] and node_map[c[0]+dir[0]][c[1]+dir[1]] not in edges[node]:
-                eleft += 1
+            if nleft+len(edges[node]) < d and c[0]+dir[0] in node_map and c[1]+dir[1] in node_map[c[0]+dir[0]] and node_map[c[0]+dir[0]][c[1]+dir[1]] not in edges[node]:
+                nleft += 1
+        eleft += nleft
+                
     eleft /= 2 # have to cancel out double counting
     # if there are less possible edges left than desired, only generate what is possible to avoid an infinite loop
     if k-e > eleft:
