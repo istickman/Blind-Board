@@ -26,6 +26,7 @@ space_map = {v: k for k, v in label_map.items()} # reverse of label map for easy
 count_map = {'GOOD': 3, 'BAD': 3, 'SHOP': 4, 'TP': 3, 'VS': 3} # mapping of count of each type of specialty node
 
 # the various options for each type of wheel
+shop_items = ['Compass (2g): see adjacent squares and players', 'Red Potion (4g): GM gives direction toward END', 'Repel (2g): you can say no', 'Arrows (2g): swap places with someone of your choice', 'Wand (3g): make player spind the bad wheel', 'Dagger (1g): steal 3 gold from someone on the same space as you']
 good_wheel = ['+3 gold', 'Battle another player', '+2 gold', 'Spin bad wheel', 'Double gold', '+5 gold', 'Gain compass', 'Send player to shadow realm']
 bad_wheel = ['Spin the good wheel', 'Go to shadow realm', 'Teleport', 'Swap places', 'Give away all gold', 'Change board', 'Return home', 'Give away 3 gold', 'Give away an item', 'Spin x2']
 vs_wheel = ['Number off', 'Another player decides', 'Joke battle', 'Losing player wins', 'Fact battle', 'Improv']
@@ -292,6 +293,22 @@ def scalen(v):
     n = int(v)
     k = n*1.5
 
+def open_shop():
+    # create popup for shop
+    popup = Tk.Toplevel()
+    # set focus to shop window
+    popup.focus_set()
+    popup.geometry('600x500')
+    popup.title('Shop Items')
+    for item in shop_items:
+        text = item.split(':')
+        text = text[0] + "\n" + text[1] + "\n"
+        Tk.Label(popup, text=text, font='Helvetica 15').pack(side=Tk.TOP)
+    def destroy(pop, event):
+        pop.destroy()
+    # after clicking away / losing focus, destroy the window
+    popup.bind("<FocusOut>", partial(destroy, popup))
+
 # make root of tkinter window
 root = Tk.Tk()
 root.title('Blind Board Game Map Generator')
@@ -332,6 +349,10 @@ wheels.pack(in_=controls, side=Tk.LEFT)
 # a second spacer to give another break before player spawn controls
 spacer2 = Tk.Frame(root)
 spacer2.pack(in_=controls, side=Tk.LEFT, padx=35)
+
+# button for shop that pops up a mini window with item descriptions
+shop_btn = Tk.Button(master=root, command=open_shop, text='Shop')
+shop_btn.pack(in_=wheels, side=Tk.LEFT)
 
 # buttons for each of the different wheels
 good_wheel_btn = Tk.Button(master=root, command=partial(spin_wheel, good_wheel), text='Good Wheel')
