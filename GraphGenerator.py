@@ -298,7 +298,6 @@ def open_shop():
     popup = Tk.Toplevel()
     # set focus to shop window
     popup.focus_set()
-    popup.geometry('600x500')
     popup.title('Shop Items')
     for item in shop_items:
         text = item.split(':')
@@ -308,6 +307,19 @@ def open_shop():
         pop.destroy()
     # after clicking away / losing focus, destroy the window
     popup.bind("<FocusOut>", partial(destroy, popup))
+
+def open_settings(settings):
+    # set focus to shop window
+    settings.focus_set()
+    # unhide the window
+    settings.deiconify()
+
+def scale_value(value, total, v):
+    global count_map
+    # change value in count map
+    count_map[value] = int(v)
+    # need to refresh main slider's minimum value
+    total.configure(from_=sum(count_map.values())+2)
 
 # make root of tkinter window
 root = Tk.Tk()
@@ -330,9 +342,47 @@ text_boxes.pack(side=Tk.BOTTOM, padx=20)
 new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph, text_boxes), text='New Board')
 new_graph_btn.pack(in_=controls, side=Tk.LEFT)
 
+# shop window
+settings = Tk.Toplevel()
+settings.title('Graph Generation Settings')
+settings.withdraw()
+
+Tk.Label(settings, text='Total Node Count').pack(side=Tk.TOP)
+nodes_slider = Tk.Scale(master=settings, command=scalen, from_=sum(count_map.values())+2, to=80, orient=Tk.HORIZONTAL)
+nodes_slider.set(n)
+nodes_slider.pack(side=Tk.TOP)
+Tk.Label(settings, text='Shop Space Count').pack(side=Tk.TOP)
+good_slider = Tk.Scale(master=settings, command=partial(scale_value, 'SHOP', nodes_slider), from_=0, to=10, orient=Tk.HORIZONTAL)
+good_slider.set(count_map['SHOP'])
+good_slider.pack(side=Tk.TOP)
+Tk.Label(settings, text='Good Space Count').pack(side=Tk.TOP)
+good_slider = Tk.Scale(master=settings, command=partial(scale_value, 'GOOD', nodes_slider), from_=0, to=10, orient=Tk.HORIZONTAL)
+good_slider.set(count_map['GOOD'])
+good_slider.pack(side=Tk.TOP)
+Tk.Label(settings, text='Bad Space Count').pack(side=Tk.TOP)
+good_slider = Tk.Scale(master=settings, command=partial(scale_value, 'BAD', nodes_slider), from_=0, to=10, orient=Tk.HORIZONTAL)
+good_slider.set(count_map['BAD'])
+good_slider.pack(side=Tk.TOP)
+Tk.Label(settings, text='Teleport Space Count').pack(side=Tk.TOP)
+good_slider = Tk.Scale(master=settings, command=partial(scale_value, 'TP', nodes_slider), from_=0, to=10, orient=Tk.HORIZONTAL)
+good_slider.set(count_map['TP'])
+good_slider.pack(side=Tk.TOP)
+Tk.Label(settings, text='VS Space Count').pack(side=Tk.TOP)
+good_slider = Tk.Scale(master=settings, command=partial(scale_value, 'VS', nodes_slider), from_=0, to=10, orient=Tk.HORIZONTAL)
+good_slider.set(count_map['VS'])
+good_slider.pack(side=Tk.TOP)
+
+def minimize_settings(set, e):
+    set.withdraw()
+settings.bind("<FocusOut>", partial(minimize_settings, settings))
+
+# button to open popup that allows customization of graph generation
+settings_btn = Tk.Button(master=root, command=partial(open_settings, settings), text='Graph Settings')
+settings_btn.pack(in_=controls, side=Tk.LEFT)
+
 # temporarly scale to control the amount of nodes in the graph
-nnodes_slider = Tk.Scale(master=root, command=scalen, from_=sum(count_map.values())+2, to=50, orient=Tk.HORIZONTAL)
-nnodes_slider.pack(in_=controls, side=Tk.LEFT)
+# nnodes_slider = Tk.Scale(master=root, command=scalen, from_=sum(count_map.values())+2, to=50, orient=Tk.HORIZONTAL)
+# nnodes_slider.pack(in_=controls, side=Tk.LEFT)
 
 # button to take the currently generated graph, generate it in pyvis, and display it in the browser using html
 save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
