@@ -154,7 +154,18 @@ def generate_grid_graph():
             node_map[c[0]+dir[0]][c[1]+dir[1]] = i
             node_coords[i] = [c[0]+dir[0], c[1]+dir[1]]
             e += 1
-            
+    
+    # manually look at each node and count the available remaining edges
+    eleft = 0
+    for node in edges:
+        for dir in directions:
+            c = node_coords[node]
+            if c[0]+dir[0] in node_map and c[1]+dir[1] in node_map[c[0]+dir[0]] and node_map[c[0]+dir[0]][c[1]+dir[1]] not in edges[node]:
+                eleft += 1
+    eleft /= 2 # have to cancel out double counting
+    # if there are less possible edges left than desired, only generate what is possible to avoid an infinite loop
+    if k-e > eleft:
+        e = k - eleft
     # randomly generate the rest of the edges until we have k
     while e < k:
         u = random.randrange(0, n)
@@ -342,11 +353,12 @@ text_boxes.pack(side=Tk.BOTTOM, padx=20)
 new_graph_btn = Tk.Button(master=root, command=partial(update_window, graph, text_boxes), text='New Board')
 new_graph_btn.pack(in_=controls, side=Tk.LEFT)
 
-# shop window
+# settings window
 settings = Tk.Toplevel()
 settings.title('Graph Generation Settings')
 settings.withdraw()
 
+# add the various sliders to the settings menu
 Tk.Label(settings, text='Total Node Count').pack(side=Tk.TOP)
 nodes_slider = Tk.Scale(master=settings, command=scalen, from_=sum(count_map.values())+2, to=80, orient=Tk.HORIZONTAL)
 nodes_slider.set(n)
@@ -379,10 +391,6 @@ settings.bind("<FocusOut>", partial(minimize_settings, settings))
 # button to open popup that allows customization of graph generation
 settings_btn = Tk.Button(master=root, command=partial(open_settings, settings), text='Graph Settings')
 settings_btn.pack(in_=controls, side=Tk.LEFT)
-
-# temporarly scale to control the amount of nodes in the graph
-# nnodes_slider = Tk.Scale(master=root, command=scalen, from_=sum(count_map.values())+2, to=50, orient=Tk.HORIZONTAL)
-# nnodes_slider.pack(in_=controls, side=Tk.LEFT)
 
 # button to take the currently generated graph, generate it in pyvis, and display it in the browser using html
 save_html_btn = Tk.Button(master=root, command=visualize_pyviz, text='Open HTML Version')
