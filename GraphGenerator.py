@@ -194,8 +194,9 @@ def generate_grid_graph():
     # mark the start/gold node
     types[0] = 0
     # now set random end node as a random dead end node
-    # note: this could end up being a node that has 2 edges, but even then, that will be the node with the least connections
-    types[min(edges, key=lambda x: len(edges[x]))] = 1
+    # note: this could end up being a node that has 2 or more edges, but even then, that will be the node with the least connections
+    min_degree = min([len(edges[x]) for x in edges if x != 0])
+    types[random.choice([n for n in edges if n != 0 and len(edges[n]) == min_degree])] = 1
     for type in count_map:
         setRandNodes(space_map[type], count_map[type])
     # set the remaining nodes as blank nodes
